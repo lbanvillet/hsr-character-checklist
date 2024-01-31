@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HSR Character Checklist</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <style>
+        body {background-color: black;}
+        #temp-spinner {display: block; margin-left: auto; margin-right: auto;}
+        #buttons {display: flex; justify-content: center;}
+        #buttons input {height: 40px; width: 40px; margin: 20px 30px 20px 30px;}
+        #fivestars, #fourstars, #trailblazer, #comingsoons {display: flex; flex-wrap: wrap; justify-content: center;}
+        .character-card {margin-left: 28px; margin-bottom: 28px; cursor: pointer; height: 130px; width: 190px; background: #1c1f25; border-radius: 0 12px 12px 0px; display: flex;}
+        .character-card.missing {opacity: 0.2;}
+        .character-card img {height: 120px; width: 105px; margin: 5px;}
+        .character-card img.rarity-4 {background: linear-gradient(180deg,#3f4064,#9c65d7);}
+        .character-card img.rarity-5 {background: linear-gradient(180deg,#a35d55,#d0aa6e);}
+        .eidolons {height: 120px; width: 65px; margin: 5px;}
+        .eidolon {height: 15px; width: 50px; margin: 4px; background: #b8c1d4;}
+        .eidolon.missing {background: #4f5562;}
+    </style>
+</head>
+<body>
+    <img id="temp-spinner" src="/images/spinner.gif"/>
+
+    <div id="buttons"></div>
+
+    <div id="fivestars"></div>
+    <div id="fourstars"></div>
+    <div id="trailblazer"></div>
+    <div id="comingsoons"></div>
+</body>
+
+<script>
+
+    $.ajax({
+        url: 'http://localhost:8081/loadcharacters',
+        method:'GET'
+        }).done(function(data){
+            $('#temp-spinner').remove();
+
+            data.forEach(character => {
+                var characterCard = document.createElement('div');
+                characterCard.setAttribute('character-name', character['name']);
+                characterCard.classList.add('character-card');
+                characterCard.classList.add('missing');
+
+                var characterImg = document.createElement('img');
+                characterImg.src = character['img'];
+                characterImg.title = character['name'];
+                characterImg.classList.add('rarity-' + character['rarity']);
+                characterCard.append(characterImg);
+
+                var eidolons = document.createElement('div');
+                eidolons.classList.add('eidolons');
+                for (let i = 0; i < 6; i++) {
+                    var eidolon = document.createElement('div');
+                    eidolon.classList.add('eidolon');
+                    eidolon.classList.add('missing');
+                    eidolons.append(eidolon);
+                }
+                characterCard.append(eidolons);
+                
+                characterCard.onclick = function() {
+                    if (characterCard.classList.contains('missing')) {
+                        characterCard.classList.remove('missing');
+                    } else {
+                        var missingEidolons = characterCard.querySelectorAll('.eidolon.missing');
+
+                        if (missingEidolons.length > 0) {
+                            var lastEidolon = missingEidolons[missingEidolons.length - 1];
+                            lastEidolon.classList.remove('missing');
+                        } else {
+                            characterCard.classList.add('missing');
+                            characterCard.querySelectorAll('.eidolon').forEach(eidolon => {
+                                eidolon.classList.add('missing');
+                            });
+                        }
+                    }
+                }
+                
+                if (character['name'].includes('Coming Soon')) {
+                    $('#comingsoons').append(characterCard);
+                } else if (character['name'].includes('Trailblazer')) {
+                    $('#trailblazer').append(characterCard);
+                } else if (character['rarity'] == 5) {
+                    $('#fivestars').append(characterCard);
+                } else if  (character['rarity'] == 4) {
+                    $('#fourstars').append(characterCard);
+                }
+            });
+                
+            var loadButton = document.createElement('input');
+            loadButton.type = 'image';
+            loadButton.src = '/images/load.png';
+            loadButton.onclick = function() {
+                const parseCookie = str => str.split(';').map(v => v.split('=')).reduce((acc, v) => {
+                    acc[decodeURIComponent(v[0].trim())] = decodeURIComponent(v[1].trim());
+                    return acc;
+                }, {});
+
+                var characters = JSON.parse(parseCookie(document.cookie).characters);
+                
+                characters.forEach(character => {
+                    var characterCard = document.querySelector('.character-card[character-name="' + character.name + '"]');
+
+                    if (character.missing) {
+                        if (!characterCard.classList.contains('missing')) {
+                            characterCard.classList.add('missing');
+                        }
+                    } else {
+                        characterCard.classList.remove('missing');
+                    }
+
+                    var eidolons = characterCard.querySelectorAll('.eidolon');
+                    eidolons.forEach(eidolon => { eidolon.classList.remove('missing'); });
+                    for (let i = 0; i < character.missingeidolons; i++) {
+                        eidolons[i].classList.add('missing');
+                    }
+                });
+            }
+            $('#buttons').append(loadButton);
+            
+            var persistButton = document.createElement('input');
+            persistButton.type = 'image';
+            persistButton.src = '/images/save.png';
+            persistButton.onclick = function() {
+                const characters = [];
+                const characterCards = document.querySelectorAll('.character-card');
+                characterCards.forEach(characterCard => {
+                    var character = {};
+                    character.name = characterCard.querySelector('img').title;
+                    character.missing = characterCard.classList.contains('missing');
+                    character.missingeidolons = characterCard.querySelectorAll('.eidolon.missing').length;
+                    characters.push(character);
+                });
+                
+                const oneYearToSeconds = 365 * 24 * 60 * 60;
+                document.cookie =  'characters=' + JSON.stringify(characters) + '; max-age = ' + oneYearToSeconds + ';';
+            }
+            $('#buttons').append(persistButton);
+
+            return;
+        }).fail(function(){
+            console.log('failed...');
+            return;
+        });
+ 
+</script>
+</html>
