@@ -13,7 +13,7 @@ const getCharacters = async () => {
     headless: true,
     defaultViewport: null,
     //executablePath: '/opt/render/.cache/puppeteer/chrome/linux-121.0.6167.85/chrome-linux64/chrome.exe'
-    //executablePath: '/opt/render/.cache/puppeteer/chrome-headless-shell/linux-121.0.6167.85'
+    executablePath: '/opt/render/.cache/puppeteer/chrome-headless-shell/linux-121.0.6167.85/chrome-headless-shell-linux64/chrome-headless-shell'
     //executablePath: 'C:/Users/Louis/.cache/puppeteer/chrome/win64-121.0.6167.85/chrome-win64/chrome.exe',
   });
 
