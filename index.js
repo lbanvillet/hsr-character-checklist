@@ -12,7 +12,7 @@ const getCharacters = async () => {
   const browser = await puppeteer.launch({
     headless: true,
     defaultViewport: null,
-    executablePath: '/opt/render/.cache/puppeteer/chrome/linux-121.0.6167.85/chrome-linux64/chrome.sh'
+    executablePath: '/opt/render/.cache/puppeteer/chrome/linux-121.0.6167.85/chrome-linux64/chrome'
     //executablePath: 'C:/Users/Louis/.cache/puppeteer/chrome/win64-121.0.6167.85/chrome-win64/chrome.exe',
   });
 
