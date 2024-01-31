@@ -12,7 +12,7 @@ const getCharacters = async () => {
   const browser = await puppeteer.launch({
     headless: true,
     defaultViewport: null,
-    executablePath: '/opt/render/.cache/puppeteer/chrome-headless-shell/linux-121.0.6167.85',
+    executablePath: '/opt/render/.cache/puppeteer/chrome/linux-121.0.6167.85/chrome-linux64/chrome',
   });
 
   const page = await browser.newPage();
